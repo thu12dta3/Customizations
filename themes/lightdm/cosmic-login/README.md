@@ -32,3 +32,5 @@ This backs up the LightDM configuration before setting the theme and greeter. It
 ## Background image
 
 `cosmic-timetraveler-LhDWW8PhPoE-unsplash.jpg` is the original supplied photograph. It is included as a separate asset; the repository's GPL-3.0 license does not change the photograph's own licensing terms. No credit text is overlaid on the login screen.
+
+For the KDE System Settings SDDM theme selector, see the native Qt Quick variant in [`../../sddm/cosmic-login/`](../../sddm/cosmic-login/). It is a separate greeter theme and does not change the active display manager.
