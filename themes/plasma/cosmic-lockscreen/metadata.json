@@ -1,0 +1,10 @@
+{
+    "KPackageStructure": "Plasma/Shell",
+    "KPlugin": {
+        "Id": "org.thu12.cosmic.preview",
+        "Name": "Cosmic Login — prévia de bloqueio",
+        "Version": "1.1",
+        "License": "GPL-3.0-or-later"
+    },
+    "X-Plasma-APIVersion": "2"
+}

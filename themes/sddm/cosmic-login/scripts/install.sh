@@ -18,4 +18,7 @@ fi
 "${SUDO[@]}" install -o root -g root -m 0644 "$ROOT_DIR/Main.qml" "$THEME_DEST/Main.qml"
 "${SUDO[@]}" install -o root -g root -m 0644 "$ROOT_DIR/preview.png" "$THEME_DEST/preview.png"
 "${SUDO[@]}" install -o root -g root -m 0644 "$ROOT_DIR/cosmic-timetraveler-LhDWW8PhPoE-unsplash.jpg" "$THEME_DEST/cosmic-timetraveler-LhDWW8PhPoE-unsplash.jpg"
+for file in CosmicScene.qml JetBrainsMono-Regular.ttf OFL.txt; do
+  "${SUDO[@]}" install -o root -g root -m 0644 "$ROOT_DIR/$file" "$THEME_DEST/$file"
+done
 printf 'Tema SDDM instalado em %s. O greeter ativo não foi alterado.\n' "$THEME_DEST"

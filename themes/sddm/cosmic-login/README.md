@@ -8,6 +8,6 @@ Com uma conta, o nome e a foto ficam fixos. Com mais contas, o seletor expansív
 
 Para fazer o tema aparecer em **Configurações do sistema → Tela de autenticação (SDDM)**, execute `./scripts/install.sh`. O script copia os arquivos para `/usr/share/sddm/themes/cosmic-login`. Ele não troca o gerenciador de login ativo, não altera a configuração global do SDDM e não reinicia serviços.
 
-Esta instalação só disponibiliza o tema ao SDDM. Neste computador o serviço ativo é LightDM; selecionar o tema no KCM do SDDM não muda a tela usada pelo LightDM. A ativação exige uma migração separada e um ciclo de login testado.
+A instalação disponibiliza o tema ao SDDM. Selecioná-lo nesse painel não altera o login de um sistema que usa LightDM, nem o bloqueio de uma sessão do Plasma. Para Meta+L, use a variante [`../../plasma/cosmic-lockscreen/`](../../plasma/cosmic-lockscreen/). A composição Qt Quick é compartilhada entre as variantes SDDM e Plasma; a prévia é renderizada dessa interface, sem desenho manual dos controles.
 
 O arquivo de fotografia é a imagem original fornecida. A licença GPL-3.0-or-later do código do tema não altera os termos de uso próprios da fotografia.
