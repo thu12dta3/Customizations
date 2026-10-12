@@ -1,0 +1,6 @@
+[theme]
+name=Cosmic Login
+description=Catppuccin Mocha desktop greeter
+engine=lightdm-webkit2-greeter
+url=index.html
+session=plasma

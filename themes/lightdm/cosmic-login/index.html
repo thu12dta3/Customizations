@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Cosmic Login</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <main class="stage">
+    <section class="login-column" aria-label="Acesso ao sistema">
+      <header class="time-block">
+        <time id="clock" class="clock" aria-label="Horário atual">--:--</time>
+        <p id="date" class="date">Carregando data…</p>
+      </header>
+
+      <section class="login-card" aria-labelledby="login-title">
+        <div class="card-heading">
+          <span class="status-dot" aria-hidden="true"></span>
+          <h1 id="login-title">Entrar</h1>
+        </div>
+        <form id="login-form" autocomplete="on">
+          <div id="user-picker" class="user-picker" data-single="true">
+            <button id="user-trigger" class="user-trigger" type="button" aria-expanded="false">
+              <span class="avatar"><img id="user-avatar" alt=""><span id="user-initials" class="initials" aria-hidden="true">T</span></span>
+              <span id="account-name" class="account-name">Usuário</span>
+              <svg class="picker-chevron" aria-hidden="true" viewBox="0 0 12 8"><path d="m1 1 5 5 5-5"/></svg>
+            </button>
+            <div id="user-menu" class="user-menu" role="listbox" aria-label="Selecionar usuário" hidden></div>
+          </div>
+          <label for="password">Senha</label>
+          <div class="password-row">
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <button id="login-button" class="submit-button" type="submit" aria-label="Entrar" title="Entrar">
+              <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M4 10h11M10 5l5 5-5 5"/></svg>
+            </button>
+          </div>
+          <p id="message" class="message" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+      <nav class="power-actions" aria-label="Opções de energia">
+        <button id="restart-button" type="button">Reiniciar</button>
+        <span aria-hidden="true">·</span>
+        <button id="shutdown-button" type="button">Desligar</button>
+      </nav>
+      <p id="preview-label" class="preview-label" hidden>Prévia visual · autenticação indisponível fora do greeter</p>
+    </section>
+  </main>
+</body>
+</html>
