@@ -2,6 +2,10 @@
 
 Temas e personalizações do desktop Linux.
 
+**Tela de bloqueio Cosmic Login:** [baixar ZIP completo](https://github.com/thu12dta3/Customizations/raw/refs/heads/main/downloads/cosmic-lockscreen.zip) · [instruções em português](themes/plasma/cosmic-lockscreen/README.md) · [English instructions](themes/plasma/cosmic-lockscreen/README.en.md)
+
+Extraia o ZIP, teste a autenticação e siga as instruções incluídas. Compatibilidade validada no KDE Plasma 6.7.5.
+
 | Caminho | Uso |
 | --- | --- |
 | [`themes/plasma/cosmic-lockscreen/`](themes/plasma/cosmic-lockscreen/) | Bloqueio normal do KDE Plasma (Meta+L), com autenticação nativa. |
