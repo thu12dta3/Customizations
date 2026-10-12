@@ -1,11 +1,12 @@
 # Customizations
 
-Personal Linux desktop customizations and themes.
+Temas e personalizações do desktop Linux.
 
-## Contents
-
-| Path | Description |
+| Caminho | Uso |
 | --- | --- |
-| [`themes/lightdm/cosmic-login/`](themes/lightdm/cosmic-login/) | Catppuccin Mocha login theme for LightDM WebKit2 Greeter on Garuda Linux. |
+| [`themes/plasma/cosmic-lockscreen/`](themes/plasma/cosmic-lockscreen/) | Bloqueio normal do KDE Plasma (Meta+L), com autenticação nativa. |
+| [`themes/lightdm/cosmic-login/`](themes/lightdm/cosmic-login/) | Login do LightDM WebKit2 Greeter. |
+| [`themes/sddm/cosmic-login/`](themes/sddm/cosmic-login/) | Login do SDDM e prévia no seletor das Configurações do KDE. |
+| [`themes/shared/cosmic-login/`](themes/shared/cosmic-login/) | Composição Qt Quick e fonte compartilhadas pelas variantes Plasma e SDDM. |
 
-See each folder's README for dependencies, installation, and rollback instructions. Repository code is licensed under GPL-3.0; image assets may have separate terms described alongside them.
+A tela de bloqueio do Plasma e a tela de login do gerenciador de sessão são componentes diferentes. Cada pasta documenta a instalação e os cuidados de ativação. O código usa GPL-3.0-or-later; a fonte e a fotografia possuem seus próprios termos.

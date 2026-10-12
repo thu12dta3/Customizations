@@ -1,0 +1,17 @@
+[SddmGreeterTheme]
+Name=Cosmic Login
+Name[pt_BR]=Cosmic Login
+Description=Login espacial em Catppuccin Mocha
+Description[pt_BR]=Tela de login espacial em Catppuccin Mocha
+Author=thu12dta3
+Copyright=2026
+License=GPL-3.0-or-later
+Type=sddm-theme
+Version=1.1
+Website=https://github.com/thu12dta3/Customizations
+Screenshot=preview.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=cosmic-login
+Theme-API=2.0
+QtVersion=6
