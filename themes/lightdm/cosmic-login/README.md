@@ -37,3 +37,7 @@ The theme calls LightDM's own authentication and session-start API; it does not 
 `cosmic-timetraveler-LhDWW8PhPoE-unsplash.jpg` is the original supplied photograph. It is included as a separate asset; the repository's GPL-3.0 license does not change the photograph's own licensing terms. No credit text is overlaid on the login screen.
 
 For the KDE System Settings SDDM theme selector, see the native Qt Quick variant in [`../../sddm/cosmic-login/`](../../sddm/cosmic-login/). It is a separate greeter theme and does not change the active display manager.
+
+## Troubleshooting
+
+If the greeter is black but the pointer remains visible, see the [NVIDIA/WebKit rendering guide](TROUBLESHOOTING.pt-BR.md) in Portuguese or [English](TROUBLESHOOTING.en.md). It includes diagnostics, a backed-up workaround, and rollback steps. The workaround does not restart LightDM automatically.

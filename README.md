@@ -34,7 +34,7 @@ Native controls differ across platforms. The packages use each locker's authenti
 
 | Folder | Purpose |
 | --- | --- |
-| [`themes/lightdm/cosmic-login/`](themes/lightdm/cosmic-login/) | LightDM WebKit2 **login** theme. |
+| [`themes/lightdm/cosmic-login/`](themes/lightdm/cosmic-login/) | LightDM WebKit2 **login** theme; [black-screen/NVIDIA troubleshooting](themes/lightdm/cosmic-login/TROUBLESHOOTING.en.md). |
 | [`themes/sddm/cosmic-login/`](themes/sddm/cosmic-login/) | SDDM **login** theme and KDE login-theme chooser preview. |
 | [`themes/shared/`](themes/shared/) | Shared visuals, font and user-level packaging helpers. |
 
