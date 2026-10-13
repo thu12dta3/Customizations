@@ -1,0 +1,13 @@
+/* Native gtklock GTK3 styling. No authentication code. */
+window { background-image: linear-gradient(to right, rgba(17,17,27,0.88), rgba(24,24,37,0.08)), url("__BACKGROUND_URI__"); background-size: cover; background-position: center; background-color: #181825; color: #cdd6f4; font-family: "Noto Sans"; }
+#window-box { min-width: 380px; }
+#time-box { margin-bottom: 20px; }
+#clock-label { font-family: "JetBrains Mono"; font-size: 76px; font-weight: normal; }
+#date-label { font-size: 14px; color: #a6adc8; }
+#account-row { padding: 12px 20px; background: rgba(49,50,68,0.42); border-radius: 10px; margin-bottom: 8px; }
+#cosmic-card { background: rgba(24,24,37,0.76); border: 1px solid rgba(205,214,244,0.13); border-radius: 18px; padding: 24px; }
+#input-label { color: #a6adc8; font-size: 12px; }
+#input-field { background: rgba(49,50,68,0.64); border: 1px solid rgba(166,173,200,0.18); border-radius: 9px; color: #cdd6f4; padding: 10px 13px; box-shadow: none; }
+#input-field:focus { border-color: #cba6f7; }
+#unlock-button { background: rgba(203,166,247,0.10); border: 1px solid rgba(203,166,247,0.26); color: #cba6f7; border-radius: 8px; min-width: 30px; }
+#error-label, #warning-label { color: #f38ba8; }

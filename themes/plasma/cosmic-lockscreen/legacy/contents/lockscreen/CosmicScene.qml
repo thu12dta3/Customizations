@@ -1,0 +1,1 @@
+../../../contents/lockscreen/CosmicScene.qml

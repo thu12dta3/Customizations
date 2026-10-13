@@ -17,17 +17,20 @@ cd themes/lightdm/cosmic-login
 
 Staging installs `lightdm-webkit2-greeter` from the official Arch `extra` repository if needed and copies theme files into `/usr/share/lightdm-webkit/themes/cosmic-login`. It does not select or restart the greeter.
 
-After testing the real greeter and PAM authentication in a controlled login cycle, enable it for the next LightDM start:
+Depois de conferir o tema, valide a configuração e ative o Cosmic Login:
 
 ```bash
-./scripts/enable.sh
+bash scripts/enable.sh --check
+sudo bash scripts/enable.sh --apply
 ```
 
-This backs up the LightDM configuration before setting the theme and greeter. It does not restart LightDM or end the current session. To undo the configuration, run:
+The installer backs up `/etc/lightdm/lightdm.conf` and `/etc/lightdm/lightdm-webkit2-greeter.conf` in a dated directory under `/var/backups`, then selects `lightdm-webkit2-greeter` and `cosmic-login`. It does not restart LightDM or end the current session. LightDM does not support a service reload here, so the running process may keep its current greeter until LightDM starts again. To undo the change, use the backup path printed by the installer:
 
 ```bash
-./scripts/rollback.sh
+sudo bash scripts/rollback.sh /var/backups/cosmic-login-activation-AAAAmmdd-HHMMSS-PID
 ```
+
+The theme calls LightDM's own authentication and session-start API; it does not change PAM, passwords, autologin, or the selected Plasma session (`plasma`, including Wayland).
 
 ## Background image
 

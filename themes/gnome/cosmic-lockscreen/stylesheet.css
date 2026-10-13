@@ -1,0 +1,10 @@
+.cosmic-lockscreen-background { background-color: #181825; }
+.cosmic-lockscreen .unlock-dialog-clock-time,
+.cosmic-clock-time { font-family: "JetBrains Mono"; font-size: 76px; font-weight: normal; color: #cdd6f4; text-align: left; }
+.cosmic-lockscreen .unlock-dialog-clock-date,
+.cosmic-clock-date { font-size: 14px; color: #a6adc8; text-align: left; margin-top: 10px; }
+.cosmic-prompt-clock { margin-bottom: 27px; }
+.cosmic-auth-card { background-color: rgba(24,24,37,0.88); border: 1px solid rgba(205,214,244,0.13); border-radius: 18px; padding: 24px; }
+.cosmic-lockscreen .login-dialog-prompt-entry { background-color: rgba(49,50,68,0.64); color: #cdd6f4; border: 1px solid rgba(166,173,200,0.18); border-radius: 9px; }
+.cosmic-lockscreen .login-dialog-prompt-entry:focus { border-color: #cba6f7; }
+.cosmic-lockscreen .login-dialog-button { background-color: rgba(203,166,247,0.10); color: #cba6f7; border: 1px solid rgba(203,166,247,0.26); border-radius: 8px; }

@@ -1,32 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONF_DIR="/etc/lightdm"
-SEAT_SNIPPET="$CONF_DIR/lightdm.conf.d/50-cosmic-login.conf"
-WEBKIT_CONF="$CONF_DIR/lightdm-webkit2-greeter.conf"
-if [[ $EUID -eq 0 ]]; then SUDO=(); else SUDO=(sudo); fi
+LIGHTDM_CONF=/etc/lightdm/lightdm.conf
+WEBKIT_CONF=/etc/lightdm/lightdm-webkit2-greeter.conf
 
-"${SUDO[@]}" rm -f "$SEAT_SNIPPET"
-shopt -s nullglob
-backups=("$CONF_DIR"/cosmic-login-backup-*)
-if ((${#backups[@]})); then
-  latest="$(printf '%s\n' "${backups[@]}" | sort | tail -n 1)"
-  if [[ -f "$latest/lightdm-webkit2-greeter.conf.original" ]]; then
-    "${SUDO[@]}" cp -a "$latest/lightdm-webkit2-greeter.conf.original" "$WEBKIT_CONF"
-  else
-    "${SUDO[@]}" rm -f "$WEBKIT_CONF"
-  fi
-  printf 'Configuração revertida usando %s. O greeter ativo será escolhido no próximo início do LightDM.\n' "$latest"
-else
-  echo 'Nenhum backup de ativação Cosmic Login encontrado; a configuração atual do WebKit Greeter foi preservada.'
+die() { printf 'Erro: %s\n' "$*" >&2; exit 1; }
+
+[[ $# -eq 1 ]] || die 'Informe o caminho exato do backup impresso pelo instalador: rollback.sh /var/backups/cosmic-login-activation-DATA-HORA-PID'
+BACKUP_DIR=$1
+
+[[ "$BACKUP_DIR" == /var/backups/cosmic-login-activation-* ]] || die 'O backup precisa estar em /var/backups/cosmic-login-activation-*.'
+[[ -f "$BACKUP_DIR/lightdm.conf.original" && -f "$BACKUP_DIR/lightdm-webkit2-greeter.conf.original" ]] || die 'O backup não contém os dois arquivos originais; nada foi alterado.'
+
+if [[ ${EUID} -ne 0 ]]; then
+  exec sudo -- bash "$0" "$BACKUP_DIR"
 fi
 
-THEME_DEST="/usr/share/lightdm-webkit/themes/cosmic-login"
-shopt -s nullglob
-theme_backups=(/var/backups/cosmic-login-*/theme.original)
-if ((${#theme_backups[@]})); then
-  latest_theme="$(printf '%s\n' "${theme_backups[@]}" | sort | tail -n 1)"
-  "${SUDO[@]}" rm -rf -- "$THEME_DEST"
-  "${SUDO[@]}" cp -a -- "$latest_theme" "$THEME_DEST"
-  printf 'Tema anterior recuperado de %s.\n' "$latest_theme"
-fi
+cp -a -- "$BACKUP_DIR/lightdm.conf.original" "$LIGHTDM_CONF"
+cp -a -- "$BACKUP_DIR/lightdm-webkit2-greeter.conf.original" "$WEBKIT_CONF"
+
+PARSED_CONFIG="$(lightdm --config="$LIGHTDM_CONF" --show-config 2>&1)" || die 'Os arquivos foram restaurados, mas LightDM reportou erro ao lê-los.'
+printf 'Configuração original restaurada a partir de %s. Nenhum serviço foi reiniciado.\n' "$BACKUP_DIR"
+printf '%s\n' "$PARSED_CONFIG" | sed -n '/^   \[Seat:\*\]/,/^$/p'

@@ -72,7 +72,6 @@ Item {
             scene.focusPassword()
         }
         function onSucceeded() {
-            if (typeof root.testingPreview !== "undefined" && root.testingPreview) console.info("COSMIC_PAM_AUTHENTICATED")
             Qt.quit()
         }
     }

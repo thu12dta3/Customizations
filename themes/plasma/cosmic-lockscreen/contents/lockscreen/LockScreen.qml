@@ -4,7 +4,6 @@ import QtQuick
 Item {
     id: root
     property bool debug: false
-    property bool testingPreview: true
     property bool viewVisible: false
     property string notification: ""
     signal clearPassword()

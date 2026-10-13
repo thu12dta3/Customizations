@@ -1,27 +1,47 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-SOURCE="$ROOT_DIR/contents/lockscreen"
-TARGET="/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen"
+source "$ROOT_DIR/scripts/common.sh"
+find_locker
+find_backend
+printf 'Backend: %s\nLocker: %s\nDestination: %s\n' "$BACKEND" "$LOCKER" "$TARGET"
+if [[ ${1:-} == --dry-run ]]; then exit 0; fi
 if [[ ${1:-} != --authentication-tested ]]; then
-  printf 'Teste primeiro com: /usr/lib/kscreenlocker_greet --testing --shell %q\n' "$ROOT_DIR"
-  printf 'Depois de desbloquear a janela com sua senha, execute: %q --authentication-tested\n' "$0"
+  printf 'Run first: bash %q\n' "$ROOT_DIR/scripts/preview.sh"
+  echo 'Only after the custom test window authenticates successfully, run with --authentication-tested.'
   exit 1
 fi
-[[ -f "$TARGET/LockScreen.qml" ]] || { echo 'Pacote de bloqueio do Plasma não encontrado.' >&2; exit 1; }
-if [[ $EUID -eq 0 ]]; then SUDO=(); else SUDO=(sudo); fi
-BACKUP="/var/backups/cosmic-lockscreen-$(date +%Y%m%d-%H%M%S)"
+SOURCE="$ROOT_DIR/contents/lockscreen"
 FILES=(LockScreenUi.qml CosmicScene.qml JetBrainsMono-Regular.ttf OFL.txt cosmic-timetraveler-LhDWW8PhPoE-unsplash.jpg)
-"${SUDO[@]}" install -d -m 0755 -o root -g root "$BACKUP"
-for file in "${FILES[@]}"; do
-  [[ -f "$SOURCE/$file" ]] || { printf 'Arquivo ausente: %s\n' "$SOURCE/$file" >&2; exit 1; }
-  if [[ -e "$TARGET/$file" ]]; then "${SUDO[@]}" cp -a "$TARGET/$file" "$BACKUP/$file"; fi
-done
-for file in "${FILES[@]}"; do
-  "${SUDO[@]}" install -m 0644 -o root -g root "$SOURCE/$file" "$TARGET/$file"
-done
+for file in "${FILES[@]}"; do [[ -s "$SOURCE/$file" ]] || { echo "Missing asset: $file" >&2; exit 1; }; done
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/cosmic-login"
 mkdir -p "$STATE_DIR"
+STAMP="$(date +%Y%m%d-%H%M%S)-$$"
+if [[ "$BACKEND" == shell ]]; then
+  if command -v kreadconfig6 >/dev/null; then
+    ACTIVE_SHELL="$(kreadconfig6 --file plasmashellrc --group Shell --key ShellPackage --default org.kde.plasma.desktop)"
+    [[ -z "$ACTIVE_SHELL" || "$ACTIVE_SHELL" == org.kde.plasma.desktop ]] || { echo 'A custom shell package is active; automatic installation stopped.' >&2; exit 1; }
+  fi
+  if [[ $EUID -eq 0 ]]; then SUDO=(); else SUDO=(sudo); fi
+  BACKUP="/var/backups/cosmic-lockscreen-$STAMP"
+  "${SUDO[@]}" install -d -m 0755 -o root -g root "$BACKUP"
+  printf '%s\n' "$TARGET" | "${SUDO[@]}" tee "$BACKUP/target.txt" >/dev/null
+  for file in "${FILES[@]}"; do
+    if [[ -e "$TARGET/$file" ]]; then "${SUDO[@]}" cp -a "$TARGET/$file" "$BACKUP/$file"; fi
+  done
+  for file in "${FILES[@]}"; do "${SUDO[@]}" install -m 0644 -o root -g root "$SOURCE/$file" "$TARGET/$file"; done
+else
+  command -v kreadconfig6 >/dev/null && command -v kwriteconfig6 >/dev/null || { echo 'Plasma 6 configuration tools are required.' >&2; exit 1; }
+  BACKUP="$STATE_DIR/lookandfeel-backup-$STAMP"
+  mkdir -p "$BACKUP"
+  kreadconfig6 --file kscreenlockerrc --group Greeter --key Theme > "$BACKUP/theme-before.txt" || true
+  if [[ -d "$TARGET" ]]; then cp -a "$TARGET" "$BACKUP/package"; fi
+  mkdir -p "$TARGET/contents/lockscreen"
+  cp -L "$ROOT_DIR/legacy/metadata.json" "$TARGET/metadata.json"
+  cp -L "$SOURCE/LockScreen.qml" "$TARGET/contents/lockscreen/LockScreen.qml"
+  for file in "${FILES[@]}"; do cp -L "$SOURCE/$file" "$TARGET/contents/lockscreen/$file"; done
+  kwriteconfig6 --file kscreenlockerrc --group Greeter --key Theme org.thu12.cosmic-lockscreen
+fi
 printf '%s\n' "$BACKUP" > "$STATE_DIR/lockscreen-backup.txt"
-printf 'Cosmic Login instalado para o próximo bloqueio. Backup: %s\n' "$BACKUP"
-printf 'Restaurar: %q %q\n' "$ROOT_DIR/scripts/rollback.sh" "$BACKUP"
+printf 'Installed for the next screen lock. Backup: %s\n' "$BACKUP"
+printf 'Restore: bash %q %q\n' "$ROOT_DIR/scripts/rollback.sh" "$BACKUP"

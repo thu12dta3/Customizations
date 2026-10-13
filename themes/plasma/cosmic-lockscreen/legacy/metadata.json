@@ -1,0 +1,10 @@
+{
+  "KPackageStructure": "Plasma/LookAndFeel",
+  "KPlugin": {
+    "Id": "org.thu12.cosmic-lockscreen",
+    "Name": "Cosmic Login",
+    "Version": "1.2",
+    "License": "GPL-3.0-or-later"
+  },
+  "X-Plasma-APIVersion": "2"
+}

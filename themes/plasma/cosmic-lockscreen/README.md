@@ -1,6 +1,6 @@
 # Cosmic Login — bloqueio do Plasma
 
-Tela de bloqueio para KDE Plasma 6.7, com a mesma composição do Cosmic Login: fotografia original, relógio e data à esquerda, cartão translúcido, foto e nome da conta atual, seta dentro do campo de senha e opções de energia alinhadas ao cartão. A hora e a data usam linhas e alturas próprias. A fonte JetBrains Mono é incluída sob OFL.
+Tela de bloqueio para KDE Plasma 6, com a mesma composição do Cosmic Login: fotografia original, relógio e data à esquerda, cartão translúcido, foto e nome da conta atual, seta dentro do campo de senha e opções de energia alinhadas ao cartão. A hora e a data usam linhas e alturas próprias. A fonte JetBrains Mono é incluída sob OFL.
 
 O bloqueio mantém a sessão atual. Ele desbloqueia exclusivamente o usuário dessa sessão; os seletores de outras contas pertencem às variantes de login LightDM/SDDM. A senha é entregue a `authenticator.respond()`, API nativa do Plasma. O componente trata prompts PAM, falhas, tentativas posteriores e sucesso.
 
@@ -10,14 +10,20 @@ O bloqueio mantém a sessão atual. Ele desbloqueia exclusivamente o usuário de
 
 O ZIP inclui todos os recursos como arquivos comuns, sem depender de outras pastas do repositório. Extraia e entre na pasta `cosmic-lockscreen`. No clone do repositório, entre em `themes/plasma/cosmic-lockscreen`.
 
-Validado no Plasma 6.7.5 com autenticação real. Outras versões e distribuições precisam passar pelo teste abaixo antes da instalação. Requer Bash, Python não é necessário para instalar, Qt Quick Controls e Qt5Compat GraphicalEffects, além do bloqueador nativo do Plasma. A captura mostra a composição; a conta e a hora reais vêm do seu sistema.
+Validado no Plasma 6.7.5 com autenticação real. O instalador detecta o caminho do bloqueador e o formato de pacote: `Plasma/Shell` atual ou `LookAndFeel` de versões anteriores. O caminho legado ainda precisa de autenticação real em uma máquina compatível. Outras versões e distribuições precisam passar pelo teste abaixo antes da instalação. Requer Bash, Python não é necessário para instalar, Qt Quick Controls e Qt5Compat GraphicalEffects, além do bloqueador nativo do Plasma. A captura mostra a composição; a conta e a hora reais vêm do seu sistema.
 
 ![Prévia](preview.png)
 
 ## Testar e instalar
 
+Verifique a detecção sem alterar arquivos:
+
 ```bash
-/usr/lib/kscreenlocker_greet --testing --shell "$PWD"
+bash scripts/install.sh --dry-run
+```
+
+```bash
+bash scripts/preview.sh
 ```
 
 Esse comando abre uma janela de teste e não bloqueia a sessão. Digite a senha do sistema e confirme que ela fecha por autenticação. Só então execute:
@@ -35,3 +41,5 @@ bash scripts/rollback.sh /var/backups/cosmic-lockscreen-DATA-HORA
 ```
 
 Uma atualização de `plasma-workspace` pode restaurar o arquivo original; após uma mudança de versão do Plasma, repita o teste antes de reinstalar. A fotografia continua sob seus termos originais, sem créditos sobrepostos.
+
+Em versões que usam `LookAndFeel`, a instalação usa apenas um pacote do usuário e a chave `Greeter/Theme`; não modifica o pacote do sistema. O rollback preserva a preferência anterior. No formato `Plasma/Shell`, o destino é descoberto em `XDG_DATA_DIRS` e o backup registra seu caminho.

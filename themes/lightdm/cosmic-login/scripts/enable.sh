@@ -1,58 +1,106 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-THEME_DEST="/usr/share/lightdm-webkit/themes/cosmic-login"
-CONF_DIR="/etc/lightdm"
-SEAT_SNIPPET="$CONF_DIR/lightdm.conf.d/50-cosmic-login.conf"
-WEBKIT_CONF="$CONF_DIR/lightdm-webkit2-greeter.conf"
-STAMP="$(date +%Y%m%d-%H%M%S)"
-BACKUP_DIR="$CONF_DIR/cosmic-login-backup-$STAMP"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+THEME_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+LIGHTDM_CONF=/etc/lightdm/lightdm.conf
+WEBKIT_CONF=/etc/lightdm/lightdm-webkit2-greeter.conf
+THEME_DEST=/usr/share/lightdm-webkit/themes/cosmic-login
+GREETER_DESKTOP=/usr/share/xgreeters/lightdm-webkit2-greeter.desktop
+MODE="${1:---apply}"
 
-if [[ $EUID -eq 0 ]]; then SUDO=(); else SUDO=(sudo); fi
-[[ -f "$THEME_DEST/index.html" ]] || { echo 'Execute scripts/stage.sh primeiro.' >&2; exit 1; }
-[[ ! -e "$SEAT_SNIPPET" ]] || { echo "Já existe $SEAT_SNIPPET; faça a integração manualmente para preservar as opções existentes." >&2; exit 1; }
-"${SUDO[@]}" install -d -o root -g root -m 0755 "$BACKUP_DIR" "$CONF_DIR/lightdm.conf.d"
-for file in "$CONF_DIR/lightdm.conf" "$WEBKIT_CONF" "$SEAT_SNIPPET"; do
-  if [[ -f "$file" ]]; then
-    "${SUDO[@]}" cp -a "$file" "$BACKUP_DIR/$(basename "$file").original"
-  fi
-done
-TMP_CONF="$(mktemp)"
-trap 'rm -f "$TMP_CONF"' EXIT
-python3 - "$WEBKIT_CONF" <<'PYCONF' > "$TMP_CONF"
+die() { printf 'Erro: %s\n' "$*" >&2; exit 1; }
+
+case "$MODE" in
+  --check|--apply) ;;
+  *) die 'Uso: enable.sh [--check|--apply]' ;;
+esac
+
+[[ -f "$THEME_DIR/index.html" && -f "$THEME_DIR/main.js" && -f "$THEME_DIR/style.css" ]] || die 'Arquivos do Cosmic Login não foram encontrados.'
+[[ -f "$THEME_DEST/index.html" ]] || die 'Tema não instalado em /usr/share/lightdm-webkit/themes/cosmic-login; execute scripts/stage.sh primeiro.'
+[[ -x /usr/bin/lightdm-webkit2-greeter && -f "$GREETER_DESKTOP" ]] || die 'LightDM WebKit2 Greeter não está instalado corretamente.'
+[[ "$(systemctl show display-manager.service -p Id --value 2>/dev/null)" == lightdm.service ]] || die 'O display manager ativo não é LightDM; nenhuma configuração foi alterada.'
+
+TMP_DIR="$(mktemp -d)"
+trap 'rm -rf -- "$TMP_DIR"' EXIT
+
+python3 - "$LIGHTDM_CONF" "$WEBKIT_CONF" "$TMP_DIR/lightdm.conf" "$TMP_DIR/webkit.conf" <<'PY'
 from pathlib import Path
 import re
 import sys
 
-path = Path(sys.argv[1])
-lines = path.read_text().splitlines() if path.exists() else []
-section_start = None
-section_end = len(lines)
-for index, line in enumerate(lines):
-    section = re.fullmatch(r"\s*\[\s*greeter\s*\]\s*(?:[#;].*)?", line, re.IGNORECASE)
-    if section:
-        section_start = index
-        for end in range(index + 1, len(lines)):
-            if re.match(r"\s*\[", lines[end]):
-                section_end = end
-                break
-        break
-if section_start is None:
-    if lines and lines[-1].strip():
-        lines.append("")
-    lines.extend(["[greeter]", "webkit_theme = cosmic-login"])
-else:
-    key_index = next((i for i in range(section_start + 1, section_end) if re.match(r"\s*webkit_theme\s*=", lines[i], re.IGNORECASE)), None)
-    if key_index is None:
-        lines.insert(section_end, "webkit_theme = cosmic-login")
-    else:
-        lines[key_index] = "webkit_theme = cosmic-login"
-print("\n".join(lines) + "\n", end="")
-PYCONF
-"${SUDO[@]}" install -o root -g root -m 0644 "$TMP_CONF" "$WEBKIT_CONF"
-"${SUDO[@]}" tee "$SEAT_SNIPPET" >/dev/null <<'CONF'
-[Seat:*]
-greeter-session=lightdm-webkit2-greeter
-CONF
-printf 'Ativado para o próximo início do greeter. Nenhum serviço foi reiniciado.\nBackup: %s\n' "$BACKUP_DIR"
-printf 'Não encerre a sessão atual. Reinicie o computador somente depois de confirmar o rollback disponível.\n'
+lightdm_source, webkit_source, lightdm_out, webkit_out = map(Path, sys.argv[1:])
+
+def set_key(text: str, section_name: str, key: str, value: str) -> str:
+    lines = text.splitlines()
+    section_indexes = [
+        i for i, line in enumerate(lines)
+        if re.fullmatch(r"\s*\[\s*" + re.escape(section_name) + r"\s*\]\s*(?:[#;].*)?", line, re.I)
+    ]
+    if not section_indexes:
+        if lines and lines[-1].strip():
+            lines.append("")
+        lines.extend([f"[{section_name}]", f"{key}={value}"])
+        return "\n".join(lines) + "\n"
+
+    # Set the key in each matching section so a repeated section cannot
+    # silently override the selected greeter later in the file.
+    for start in reversed(section_indexes):
+        end = next((i for i in range(start + 1, len(lines)) if re.match(r"\s*\[", lines[i])), len(lines))
+        active = [i for i in range(start + 1, end) if re.match(r"\s*" + re.escape(key) + r"\s*=", lines[i], re.I)]
+        if active:
+            lines[active[0]] = f"{key}={value}"
+            for i in reversed(active[1:]):
+                lines.pop(i)
+        else:
+            lines.insert(end, f"{key}={value}")
+    return "\n".join(lines) + "\n"
+
+lightdm_text = lightdm_source.read_text() if lightdm_source.exists() else ""
+webkit_text = webkit_source.read_text() if webkit_source.exists() else ""
+lightdm_out.write_text(set_key(lightdm_text, "Seat:*", "greeter-session", "lightdm-webkit2-greeter"))
+webkit_out.write_text(set_key(webkit_text, "greeter", "webkit_theme", "cosmic-login"))
+PY
+
+# Ask LightDM's own parser to read the staged file before touching /etc.
+PARSED_CONFIG="$(lightdm --config="$TMP_DIR/lightdm.conf" --show-config 2>&1)" || die 'LightDM rejeitou a configuração preparada.'
+grep -Fq 'greeter-session=lightdm-webkit2-greeter' <<<"$PARSED_CONFIG" || die 'A configuração preparada não seleciona o greeter WebKit.'
+grep -Eq '^webkit_theme\s*=\s*cosmic-login\s*$' "$TMP_DIR/webkit.conf" || die 'A configuração preparada não seleciona o tema Cosmic Login.'
+
+if [[ "$MODE" == --apply ]] \
+  && grep -Fq 'greeter-session=lightdm-webkit2-greeter' < <(lightdm --show-config 2>&1) \
+  && grep -Eq '^\s*webkit_theme\s*=\s*cosmic-login\s*$' "$WEBKIT_CONF"; then
+  printf 'Cosmic Login já está selecionado no LightDM; nada foi alterado nem criado novo backup.\n'
+  exit 0
+fi
+
+if [[ "$MODE" == --check ]]; then
+  printf 'Prévia validada pelo parser do LightDM; nenhum arquivo do sistema foi alterado.\n'
+  diff -u "$LIGHTDM_CONF" "$TMP_DIR/lightdm.conf" || true
+  diff -u "$WEBKIT_CONF" "$TMP_DIR/webkit.conf" || true
+  exit 0
+fi
+
+if [[ ${EUID} -ne 0 ]]; then
+  exec sudo -- bash "$0" --apply
+fi
+
+STAMP="$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="/var/backups/cosmic-login-activation-$STAMP-$$"
+install -d -o root -g root -m 0700 "$BACKUP_DIR"
+cp -a -- "$LIGHTDM_CONF" "$BACKUP_DIR/lightdm.conf.original"
+cp -a -- "$WEBKIT_CONF" "$BACKUP_DIR/lightdm-webkit2-greeter.conf.original"
+{
+  printf 'LightDM Cosmic Login activation backup\n'
+  printf 'Created: %s\n' "$(date --iso-8601=seconds)"
+  printf 'Changed files:\n  %s\n  %s\n' "$LIGHTDM_CONF" "$WEBKIT_CONF"
+  printf 'Rollback: sudo bash %s/scripts/rollback.sh %s\n' "$THEME_DIR" "$BACKUP_DIR"
+} > "$BACKUP_DIR/README.txt"
+chmod 0600 "$BACKUP_DIR/README.txt"
+
+install -o root -g root -m 0644 "$TMP_DIR/lightdm.conf" "$LIGHTDM_CONF"
+install -o root -g root -m 0644 "$TMP_DIR/webkit.conf" "$WEBKIT_CONF"
+
+printf 'Cosmic Login configurado para o próximo greeter do LightDM. Nenhum serviço foi reiniciado.\n'
+printf 'Backup completo: %s\n' "$BACKUP_DIR"
+printf 'Rollback: sudo bash %q %q\n' "$THEME_DIR/scripts/rollback.sh" "$BACKUP_DIR"

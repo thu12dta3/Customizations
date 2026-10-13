@@ -6,12 +6,12 @@ A left-aligned cosmic lock screen with the original Milky Way photograph, Catppu
 
 [Download the standalone ZIP](https://github.com/thu12dta3/Customizations/raw/refs/heads/main/downloads/cosmic-lockscreen.zip). Extract it and open a terminal inside the `cosmic-lockscreen` folder. No repository clone is needed. All resources are included as regular files.
 
-Tested with real password authentication on **KDE Plasma 6.7.5**. Other versions/distributions are not confirmed compatible. Requires Bash, the native Plasma screen locker, Qt Quick Controls, and Qt5Compat GraphicalEffects. The installer expects the default shell package at `/usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen`.
+Tested with real password authentication on **KDE Plasma 6.7.5**. Other versions/distributions are not confirmed compatible. Requires Bash, the native Plasma screen locker, Qt Quick Controls, and Qt5Compat GraphicalEffects. The installer discovers the native locker in `/usr/lib`, `/usr/libexec`, and common multiarch paths, then detects the shell or legacy LookAndFeel API. Legacy Plasma 6 support is experimental until tested on a real legacy installation. Use `bash scripts/install.sh --dry-run` to inspect discovery without changing files.
 
 First open a testing window:
 
 ```bash
-/usr/lib/kscreenlocker_greet --testing --shell "$PWD"
+bash scripts/preview.sh
 ```
 
 Enter your system password directly into the testing window. Proceed only if the custom interface appears and closes after successful authentication. If it fails or shows the default fallback interface, close the test window and do not install.
@@ -35,3 +35,5 @@ Plasma 6.7 loads this UI from its shell package. The installer replaces that pac
 ![Preview](preview.png)
 
 Code: GPL-3.0-or-later, see `LICENSE`. JetBrains Mono: OFL-1.1, see `contents/lockscreen/OFL.txt`. The photograph retains its original licensing terms. The snapshot is illustrative: the running lock screen uses your account and current time.
+
+For older Plasma 6 lockers with `--theme`, the installer uses a user-level LookAndFeel package and saves/restores the previous Greeter/Theme setting. Modern `--shell` lockers use the existing default shell package, with the discovered destination recorded in the system backup. No distribution-specific package command is run.
